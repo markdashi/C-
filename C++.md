@@ -688,6 +688,66 @@ return this->m_age;
 ## 9.命名空间
 
 - 命名空间可以用来避免命名冲突
+```
+using namespace xx
+using xx::
+```
+
+- 命名空间不影响内存才能布局
+
+### 1.命名空间的嵌套
+
+- 有个默认的全局命名空间，我们创建的命名空间默认都嵌套在它里面
+
+默认的命名空间，没有名字
+::test（）
+
+### 2.命名空间的合并
+
+namespace MJ{
+  int g_age;
+}
+namespace MJ{
+int g_height;
+}
+
+namespace MJ{
+  int g_age;
+  int g_height;
+}
+
+```
+namespace FX{
+  namespace SS{
+    int m_age;
+    class Person{
+    
+    }
+  } 
+}
+
+```
+### 10.继承
+
+- 继承、可以让子类拥有父类的所有成员（变量\函数）
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
