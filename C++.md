@@ -1000,4 +1000,155 @@ C++允许一个类可以有多个父类(不建议使用，会增加程序设计�
 - ◼ Person类被称为虚基类
 
 
+###  19、静态成员(static)
+
+**静态成员:被static修饰的成员变量\函数**
+
+- 可以通过**对象(对象.静态成员)**、**对象指针(对象指针->静态成员)**、**类访问(类名::静态成员)**
+
+ **静态成员变量**
+
+- 存储在数据段(全局区，类似于全局变量)，整个程序运行过程中只有一份内存
+
+- 对比全局变量，它可以设定访问权限(public、protected、private)，达到局部共享的目的
+- **必须初始化，必须在类外面初始化，初始化时不能带static，如果类的声明和实现分离(在实现.cpp中初始化)**
+
+**静态成员函数**
+
+- 内部不能使用this指针(this指针只能用在**非静态成员**函数内部)
+- 不能是虚函数(虚函数只能是非静态成员函数)
+- 内部不能访问非静态成员变量\函数，只能访问静态成员变量\函数
+- 非静态成员函数内部可以访问静态成员变量\函数
+- 构造函数、析构函数不能是静态
+- 当声明和实现分离时，实现部分不能带static
+
+
+可以使用类名访问，等同于类方法，要修改一个静态成员数据，那么需要静态成员函数。
+
+
+this ecx
+
+```
+class Car{
+private:
+static int m_count;
+public:
+Car(){
+m_count++;
+}
+~Car(){
+m_count--;
+}
+int getCount(){
+return m_count;
+}
+};
+
+int Car::m_count = 0;
+
+Car car1;
+Car car2;
+Car *c = new Car();
+delete c;
+
+cout << "Car count:" << car1.getCount() << endl;
+
+```
+
+####  静态成员经典应用 – 单例模式
+
+1.把构造函数私有化
+2.定义一个私有的成员变量指针，用于指向单例对象
+3.提供一个公共的返回单例对象的静态成员函数
+
+```
+class Rocket{
+public:
+static Rocket *shareRocket(){
+if (ms_rocket == NULL) {
+ms_rocket = new Rocket();
+}
+return ms_rocket;
+}
+private:
+static Rocket *ms_rocket;
+Rocket(){
+cout << "Rocket::Rocket()" << endl;
+}
+};
+
+Rocket *Rocket::ms_rocket = NULL;
+```
+
+###  20、const成员
+
+- const成员:被const修饰的成员变量、非静态成员函数
+
+**const成员变量** 不可以修改
+
+- 必须初始化(**类内部初始化**)，可以在声明的时候直接初始化赋值
+- 非static的const成员变量还可以在初始化列表中初始化
+
+**const成员函数(非静态)** 
+
+- const关键字写在参数列表后面，函数的声明和实现都必须带const
+- 作用:内部不能修改当前对象非static成员变量
+- 内部只能调用const成员函数、static成员函数
+- 非const成员函数可以调用const成员函数
+- const成员函数和非const成员函数构成重载
+- 非const对象(指针)优先调用非const成员函数
+- const对象(指针)只能调用const成员函数
+
+
+### 21、引用类型成员
+引用类型成员变量必须初始化 (不考虑static情况)
+
+- 在声明的时候直接初始化
+- 通过初始化列表初始化
+
+```
+class Car {
+int age;
+int &m_price = age;
+public:
+Car (int &price) :m_price(price) { }
+}
+
+```
+
+### 22、拷贝构造函数(Copy Constructor)
+
+- 拷贝构造函数是构造函数的一种
+- 当利用已存在的对象创建一个新对象时(类似于拷贝)，就会调用新对象的拷贝构造函数进行初始化
+- 拷贝构造函数的格式是固定的，接收一个const引用作为参数
+
+```
+char name[] = {'b','m','w','\0'};
+const char *name2 = "bmw";
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
