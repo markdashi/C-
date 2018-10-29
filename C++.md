@@ -1089,6 +1089,8 @@ Rocket *Rocket::ms_rocket = NULL;
 - 必须初始化(**类内部初始化**)，可以在声明的时候直接初始化赋值
 - 非static的const成员变量还可以在初始化列表中初始化
 
+   构造函数中只能初始化对象的成员变量，static 修饰的是不属于对象的成员变量
+
 **const成员函数(非静态)** 
 
 - const关键字写在参数列表后面，函数的声明和实现都必须带const
@@ -1211,9 +1213,41 @@ this->m_name = NULL;
 
 - 使用对象类型作为函数的参数或者返回值，可能会产生一些不必要的中间对象
 
+作返回值或者参数会调用拷贝构造
+
+```
+class Car {
+    int m_price;
+public:
+    Car(int price = 0) :m_price(price) {
+        cout << "Car(int) - " << this << "-" << this->m_price << endl;
+    }
+    Car(const Car &car) :m_price(car.m_price) {
+        cout << "Car(const Car &) - " << this << " - " << this->m_price << endl;
+    }
+};
+Car test(){
+    Car car(10);
+    return car;
+};
+
+Car car;
+car = test();
+调用了三次构造函数
+Car(int) - 010FFB60-0
+Car(int) - 010FFA6C-10
+Car(const Car &) - 010FFA94 - 10
 
 
+Car car = test();
+调用了2次构造函数
+Car(int) - 0055FC28-10
+Car(const Car &) - 0055FD10 - 10
+```
 
+
+### 24、匿名对象(临时对象)
+- 匿名对象:没有变量名、没有被指针指向的对象，用完后马上调用析构
 
 
 
