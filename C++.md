@@ -1122,27 +1122,94 @@ Car (int &price) :m_price(price) { }
 - 当利用已存在的对象创建一个新对象时(类似于拷贝)，就会调用新对象的拷贝构造函数进行初始化
 - 拷贝构造函数的格式是固定的，接收一个const引用作为参数
 
+
+拷贝构造函数的格式是固定的
+`Car(const Car &car) {}`
+
+```
+Car car(100,"BMW");
+Car car2 = car;
+Car car3(car2);
+
+Car car4;
+car4 = car3;
+
+```
+
+- `car2`  `car3`都是通过拷贝构造函数初始化
+- `car`  `car4`是通过非拷贝构造函数初始化
+- `car4 = car3` 是一个赋值操作（默认是浅复制），并不会调用拷贝构造函数
+
 ```
 char name[] = {'b','m','w','\0'};
 const char *name2 = "bmw";
 ```
 
 
+**以下这样传字符串是有问题的**
+
+```
+class Car{
+int m_price;
+const char *m_name;
+public:
+Car(int price = 0,const char *name = NULL):m_price(price),m_name(name){
+
+}
+~Car(){
+
+}
+};
+
+Car car(100,"bmw");
+
+char name[] = {};
+
+Car *car1 = new Car(200,name);
+
+```
+
+正确的做法：
+```
+class Car{
+int m_price;
+char *m_name;
+public:
+Car(int price = 0,const char *name = NULL):m_price(price){
+if (name == NULL) return;
+this->m_name = new char [strlen(name) + 1]();
+strcpy(this->m_name, name);
+}
+~Car(){
+if (this->m_name == NULL) return;
+delete [] this->m_name;
+this->m_name = NULL;
+}
+};
+```
+
+### 23.浅拷贝、深拷贝
+
+**浅拷贝(shallow copy)： 指针类型仅仅是拷贝地址值**
+
+**深拷贝(deep copy): 拷贝内容到新申请的内存空间**
 
 
+#### 1.编译器默认的提供的拷贝是浅拷贝(shallow copy)
 
 
+- 将一个对象中所有成员变量的值拷贝到另一个对象 
+- 如果某个成员变量是个指针，只会拷贝指针中存储的地址值，并不会拷贝指针指向的内存空间 
+- 可能会导致堆空间多次free的问题
+
+#### 2. 如果需要实现深拷贝(deep copy)，就需要自定义拷贝构造函数
+
+- 指针类型的成员变量所指向的内存空间，拷贝到新的内存空间
 
 
+#### 3.对象型参数和返回值
 
-
-
-
-
-
-
-
-
+- 使用对象类型作为函数的参数或者返回值，可能会产生一些不必要的中间对象
 
 
 
