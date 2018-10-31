@@ -1214,6 +1214,7 @@ this->m_name = NULL;
 - 使用对象类型作为函数的参数或者返回值，可能会产生一些不必要的中间对象
 
 作返回值或者参数会调用拷贝构造
+以下函数调用是在Windows平台 x86
 
 ```
 class Car {
@@ -1248,6 +1249,247 @@ Car(const Car &) - 0055FD10 - 10
 
 ### 24、匿名对象(临时对象)
 - 匿名对象:没有变量名、没有被指针指向的对象，用完后马上调用析构
+
+### 25、隐式构造
+- C++中存在隐式构造的现象:某些情况下，会隐式调用单参数的构造函数
+
+
+```
+class Person {
+public:
+int m_age;
+Person(int age):m_age(age){
+cout << "Person(int age):m_age(age)" << endl;
+}
+Person(){
+cout << "Person()" << endl;
+}
+~Person(){
+cout << "~Person()" << endl;
+}
+};
+
+
+调用2次构造函数，当将20赋值给person时候，会产生一个匿名对象，使用完之后立即析构
+Person person(10);
+person = 20;// person(20)
+
+打印
+//Person(int age):m_age(age)
+//Person(int age):m_age(age)
+//~Person()
+
+```
+
+可以通过关键字explicit禁止掉隐式构造
+
+```
+explicit Person(int age):m_age(age){
+cout << "Person(int age):m_age(age)" << endl;
+}
+```
+
+### 26、编译器自动生成的构造函数
+
+C++的编译器在某些特定的情况下，会给类自动生成无参的构造函数，比如
+
+- 成员变量在声明的同时进行了初始化 `int m_age = 0`
+- 有定义虚函数
+- 虚继承了其他类
+- 包含了对象类型的成员，且这个成员有构造函数(编译器生成或自定义)
+-  父类有构造函数(编译器生成或自定义)
+
+**对象创建后，需要做一些额外操作时(比如内存操作、函数调用)，编译器一般都会为其自动生成无参的构造函数**
+
+### 27、友元
+
+友元包括友元函数和友元类
+- ◼ 如果将函数A(非成员函数)声明为类C的友元函数，那么函数A就能直接访问类C对象的所有成员 
+- ◼ 如果将类A声明为类C的友元类，那么类A的所有成员函数都能直接访问类C对象的所有成员
+- ◼ 友元破坏了面向对象的封装性，但在某些频繁访问成员变量的地方可以提高性能
+
+```
+class Point {
+friend Point add(const Point &,const Point &);
+int m_x;
+int m_y;
+public:
+Point(){}
+Point(int x,int y):m_x(x),m_y(y) {
+cout << "Point(int x,int y):m_x(x),m_y(y)" << endl;
+}
+Point(const Point &p){
+cout << "Point(const Point &p)" << endl;
+}
+~Point(){
+cout << "~Point()" << endl;
+}
+};
+
+Point add(const Point &p1,const Point &p2){
+return Point(p1.m_x+p2.m_x,p2.m_y+p2.m_y);
+}
+```
+### 28、内部类
+
+如果将类A定义在类C的内部，那么类A就是一个内部类(嵌套类)
+
+
+#### 内部类的特点 - 有点友元类的味道，仅仅是权限的问题
+
+- 支持public、protected、private权限
+- 内部类成员函数可以直接访问其外部类对象的所有成员(反过来则不行)
+- 内部类成员函数可以直接不带类名、对象名访问其外部类的static成员
+- 不会影响外部类的内存布局
+- 可以在外部类内部声明，在外部类外面进行定义
+
+
+####  内部类 – 声明和实现分离
+
+1、
+```
+class Point {
+class Math{
+void test();
+};
+};
+void Point::Math::test(){
+
+}
+```
+2、
+```
+class Point {
+class Math;
+};
+class Point::Math{
+void test(){
+
+}
+};
+```
+3、
+```
+class Point {
+class Math;
+};
+class Point::Math{
+void test();
+};
+
+void Point::Math::test(){
+
+}
+
+```
+
+### 29、局部类
+
+在一个函数内部定义的类，称为局部类
+
+**局部类的特点**
+
+- 作用域仅限于所在的函数内部
+- 其所有的成员必须定义在类内部，不允许定义static成员变量
+- 成员函数不能直接访问函数的局部变量(static变量除外)
+
+```
+int main(){
+class Person{
+
+}
+
+}
+
+```
+
+
+### 30、运算符重载(operator overload)
+
+◼ 运算符重载(操作符重载):可以为运算符增加一些新的功能
+
+```
+class Point {
+friend Point operator+(const Point &,const Point &);
+int m_x;
+int m_y;;
+public:
+Point(int x,int y):m_x(x),m_y(y){
+cout << " Point(int x,int y):m_x(x),m_y(y)" << endl;
+}
+Point(const Point &p){
+cout << "Point(const Point &p)" << endl;
+}
+};
+
+Point operator+(const Point &p1,const Point &p2){
+return Point(p1.m_x+p2.m_x,p1.m_y+p2.m_y);
+}
+
+Point p1(10,20);
+Point p2(20,30);
+
+Point p3 = p1 + p2;
+
+```
+
+
+```
+class Point {
+int m_x;
+int m_y;;
+public:
+Point(int x,int y):m_x(x),m_y(y){
+cout << " Point(int x,int y):m_x(x),m_y(y)" << endl;
+}
+Point(const Point &p){
+cout << "Point(const Point &p)" << endl;
+}
+Point operator+(const Point &point){
+return Point(this->m_x+point.m_x,this->m_y+point.m_y);
+}
+// 1.返回*的话是不能进行赋值 2.返回对象类型的话可能会产生中间变量，调用拷贝构造函数
+Point &operator+=(const Point &point){
+this->m_x += point.m_x;
+this->m_y += point.m_y;
+return *this;
+}
+};
+
+Point p1 = Point(10,20);
+Point p2 = Point(20,30);
+
+Point p3 = p1 + p2;
+(p1 += p2) = p3;
+
+```
+- 全局函数、成员函数都支持运算符重载
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
