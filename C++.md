@@ -1080,6 +1080,11 @@ cout << "Rocket::Rocket()" << endl;
 Rocket *Rocket::ms_rocket = NULL;
 ```
 
+
+#### 注意:
+- 单例需要禁止:拷贝行为，赋值行为
+
+
 ###  20、const成员
 
 - const成员:被const修饰的成员变量、非静态成员函数
@@ -1465,33 +1470,261 @@ Point p3 = p1 + p2;
 ```
 - 全局函数、成员函数都支持运算符重载
 
+**1、调用父类的运算符重载函数**
+
+####  2、运算符重载注意点
+ ![](./operator.png)
+
+
+### 31、仿函数（函数对象)
+
+- 仿函数：将一个对象当做一个函数一样使用
+
+- 对比普通函数，它作为对象可以保存状态
+
+
+```
+class Sum {
+public:
+int operator()(int a,const int b){
+return a + b;
+}
+};
+
+Sum sum;
+
+cout << sum(10,20) << endl;
+
+```
+
+### 32、模板(template)
+
+泛型，是一种将类型参数化以达到代码复用的技术，C++中使用模板来实现泛型
+
+◼ 模板的使用格式如下
+
+- template <typename\class T> 
+- typename和class是等价的
+
+- 模板没有被使用时，是不会被实例化出来的
+- 模板的声明和实现如果分离到.h和.cpp中，会导致链接错误 
+-  一般将模板的声明和实现统一放到一个.hpp文件中
+
+
+### 33、类型转换
+
+C++中有4个类型转换符
+
+- static_cast
+- dynamic_cast
+- reinterpret_cast
+- const_cast 
+
+使用格式:xx_cast<type>(expression)
+
+
+#### 1.static_cast
+
+一般用于去除const属性，将const转换成非const
+
+
+#### 2.dynamic_cast
+
+一般用于多态类型的转换，有运行时安全检测
+
+转换时是判断类型的
+
+```
+class Person {
+   virtual void run() { }
+};
+class Student : public Person { };
+
+class Car { };
+
+Person *p1 = new Person();
+Person *p2 = new Student();
+
+
+Student *stu1 = dynamic_cast<Student *> (p1); // NULL
+Student *stu2 = dynamic_cast<Student *> (p2);
+
+Car *car = dynamic_cast<Car *>(p1); // NULL
+
+```
+
+#### 3.static_cast
+
+- 对比dynamic_cast，缺乏运行时安全检测
+
+- 不能交叉转换(不是同一继承体系的，无法转换)
+
+- 常用于基本数据类型的转换、非const转成const
+
+- 使用范围较广
+
+```
+Car *car = static_cast<Car *>(p1)； // 错误
+
+```
+
+#### 4.reinterpret_cast
+
+- 属于比较底层的强制转换，没有任何类型检查和格式转换，仅仅是简单的二进制数据拷贝
+
+- 可以交叉转换
+
+- 可以将指针和整数互相转换
+
+```
+int *p = reinterpret_cast<int *>(100);
+int num = reinterpret_cast<int>(p);
+
+int i = 10;
+double d1 =  reinterpret_cast<double &>(i);
+
+```
+
+### 34、C++11新特性
+
+#### 1.auto
+
+```
+auto i = 10;
+```
+
+#### 2、decltype
+
+```
+int a = 10;
+decltype(a) b = 20; // int
+
+```
+
+#### 3、nullptr
+
+可以解决NULL的二义性问题
+ 
+```
+void func(int p){
+
+}
+void func(int *p){
+    
+}
+
+func(0)
+func(nullptr)
+func(NULL)
+```
+
+#### 4.快速遍历
+
+```
+int array[] = { 11,22,33,44,55 };
+for (int item: array) {
+    cout << item << endl;
+}
+
+```
+
+#### 5.更加简洁的初始化方式
+
+`int array[]{ 11,22,33,44,55 }`
+
+
+
+#### 6.Lambda表达式
+
+有点类似于JavaScript中的闭包、iOS中的Block，本质就是函数
+
+完整结构: [capture list] (params list) mutable exception-> return type { function body }
+
+- 有时可以省略部分结构
+✓[capture list] (params list) -> return type {function body}
+✓[capture list] (params list) {function body}
+✓[capture list] {function body}
+ 
+
+
+```
+int (*p)(int , int) =  [](int a, int b) -> int {
+    return a + b;
+}
+
+[](int a, int b) -> int {
+    return a + b;
+}(10,20);
+
+
+```
+
+```
+int exec(int a,int b,int(*func)(int,int)) {
+    if(func == nullptr) return 0;
+    return func(a,b);
+}
+
+exec(20, 10, [] (int v1, int v2) { return v1 + v2; })
+
+int a = 10;
+int b = 20;
+
+auto p = [a,b] {
+    cout << a << endl;
+    cout << b << endl;
+};
+
+// 隐式捕获 值捕获
+auto p = [=] {
+    cout << a << endl;
+    cout << b << endl;
+};
+
+// 隐式捕获 引用捕获
+auto p = [&] {
+    cout << a << endl;
+    cout << b << endl;
+};
+
+// 内部的a 是可以修改的，但是不改变外部的值
+auto p = [a] () mutable {
+    a++;
+}
+
+
+
+```
+
+
+#### C++ 17
+
+可以进行初始化的if、switch语句
+
+```
+// 变量a，b 的作用域是它所在的if语句，以及后面的if-else语句
+if(int a = 10; a > 10) {
+
+
+} else if (int b = 20; a > 5 && b > 10 ) {
+
+}
+
+switch (int a = 10;a){
+    case 1:
+    break;
+    case 5:
+    break;
+    case 10:
+    break;
+    default:
+    break;
+}
+
+
+```
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+ 
